@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import sys
-from time import sleep
+import argparse
+from os.path import exists
 
 import cv2
 
@@ -25,12 +25,17 @@ class RenderCtx:
 
 def renderVideo(ctx: RenderCtx):
     videoCapture = cv2.VideoCapture(ctx.vidPath)
+
+    if not videoCapture.isOpened():
+        print("Couldn't open the target file")
+        exit(1)
+
     ret, frame = videoCapture.read()
 
     if ret == False:
-        print("Couldn't read a frame")
+        print("Error while reading from the file")
         videoCapture.release()
-        exit()
+        exit(1)
 
     # TODO: remove when will figure out how to keep original aspect ratio
     targetWidth = ctx.targetWidth
@@ -67,7 +72,7 @@ def renderVideo(ctx: RenderCtx):
     videoCapture.release()
 
     # save to a file
-    f = open(ctx.renderedPath + ".avid", "w")
+    f = open(ctx.renderedPath, "w")
     f.write(str(ctx.frameRate) + "\n\n")
     f.write(renderedVid)
     f.close()
@@ -76,9 +81,26 @@ def renderVideo(ctx: RenderCtx):
 
 
 def main():
-    # TODO: cli args and error checking
-    vPath = sys.argv[1]
-    rendPath = sys.argv[2]
+    argParser = argparse.ArgumentParser(description="\"ascii video\"\
+        renderer", add_help=True)
+
+    argParser.add_argument("target", type=str, help="Video file to process")
+    argParser.add_argument("output", type=str, help="Rendered result file")
+    argParser.add_argument("-f", "--force", action="store_true", help="Forcefully\
+        overwrite the result file if it already exists")
+
+    args = argParser.parse_args()
+
+    vPath = args.target
+    if not exists(vPath):
+        print("Specified target doesn't exist")
+        exit(1)
+
+    rendPath = args.output
+    if not args.force and exists(rendPath):
+        print("Warning: Specified result file already exists.\n\
+            Run with -f to overwrite it.")
+        exit(1)
 
     rendCtx = RenderCtx(vPath, rendPath)
 
