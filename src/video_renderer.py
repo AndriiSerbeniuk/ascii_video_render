@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
+"""
+    A renderer that prints videos in characters.
+"""
 import argparse
 from os.path import exists
 
 import cv2
 
-import vid_meta as vm
 import img_renderer
 
 class RenderCtx:
     def __init__(self, vidPath: str, renderedPath: str) -> None:
         self.vidPath = vidPath
         self.renderedPath = renderedPath
-
-        self.frameCount = vm.getFramesCount(vidPath)
-        self.frameRate = vm.getFrameRate(vidPath)
 
         # TODO: make these configurable
         # render settings
@@ -45,6 +44,10 @@ def renderVideo(ctx: RenderCtx):
 
     imgRenderer = img_renderer.Renderer(charsRange = ctx.charsRange)
 
+    frameRate = int(videoCapture.get(cv2.CAP_PROP_FPS))
+    frameCount = int(videoCapture.get(cv2.CAP_PROP_FRAME_COUNT))
+    print("Opened a video file with {} frames at {} FPS".format(frameCount, frameRate))
+
     renderedVid = ""
     prevPercent = -1
     idx = 1
@@ -58,7 +61,7 @@ def renderVideo(ctx: RenderCtx):
         # TODO: optional realtime preview?
 
         if idx == ctx.printStep:
-            percent = int(done / ctx.frameCount * 100)
+            percent = int(done / frameCount * 100)
             if percent > prevPercent:
                 print(percent, "% done")
                 prevPercent = percent
@@ -73,7 +76,7 @@ def renderVideo(ctx: RenderCtx):
 
     # save to a file
     f = open(ctx.renderedPath, "w")
-    f.write(str(ctx.frameRate) + "\n\n")
+    f.write(str(frameRate) + "\n\n")
     f.write(renderedVid)
     f.close()
 
