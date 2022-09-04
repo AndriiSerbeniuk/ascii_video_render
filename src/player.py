@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+    A simple player for printed videos
+"""
 from os.path import exists
 import argparse
 from time import sleep
@@ -38,12 +41,10 @@ def main():
         exit(1)
 
     if frameRate <= 0:
-        print("Unsopported framerate value")
+        print("Unsupported framerate value")
         exit(1)
 
     # wait between printing each frame to resemble framerate
-    # TODO: this is probably wrong? when actually viewing something the
-    # framerate feels too fast
     delaySecs = 1000 / frameRate / 1000 # secs per frame
 
     frames = vidData[1:]

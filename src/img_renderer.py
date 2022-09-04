@@ -1,5 +1,5 @@
 """
-    Code for image processing and rendering into text.
+    Image processor that prints an image in text
 """
 import argparse
 from genericpath import exists
