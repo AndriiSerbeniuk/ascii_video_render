@@ -41,6 +41,29 @@ class ImageProcessor:
         def process(self, image: Mat) -> Mat:
             return cv2.GaussianBlur(image, (7, 7), 0) # TODO: make sense of these args
 
+    class Scale(ProcessingAction):
+        def __init__(self, width: int, height: int) -> None:
+            super().__init__()
+            if width <= 0 or height <= 0:
+                raise Exception("Invalid size values:\n\tw:{}\n\th:{}"\
+                    .format(width, height))
+                return
+            self.width = width
+            self.height = height
+
+        def process(self, image: Mat) -> Mat:
+            return cv2.resize(image, (self.width,\
+                self.height), interpolation = cv2.INTER_AREA)
+
+        def processStatic(image: Mat, width: int, height: int) -> Mat:
+            if width <= 0 or height <= 0:
+                raise Exception("Invalid size values:\n\tw:{}\n\th:{}"\
+                    .format(width, height))
+                return
+            return cv2.resize(image, (width, height),\
+                interpolation = cv2.INTER_AREA)
+
+
     default_pipeline = [Contrast(1.4, 0)]
 
     def __init__(self, width: int = 0, height: int = 0, contrast: float = 1.4,\
@@ -61,9 +84,11 @@ class ImageProcessor:
         if len(processed.shape) > 2:
             processed = self.Grayscale.processStatic(processed)
 
-        # cut to size
-        processed = cv2.resize(processed, (self.targetWidth,\
-            self.targetHeight), interpolation = cv2.INTER_AREA)
+        # check if the size is right
+        w, h = processed.shape
+        if w != self.targetWidth or h != self.targetHeight:
+            processed = self.Scale.processStatic(processed, self.targetWidth,\
+                self.targetHeight)
 
         return processed
 
